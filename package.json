@@ -1,0 +1,9 @@
+{
+  "name": "maipharm-edu",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-dry-page.mjs",
+    "test": "node tests/verify-site.mjs"
+  }
+}

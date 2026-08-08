@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>건조시럽 계산기 제작 지침 v1.0.0 | 마이팜 교육자료</title>
+  <link rel="canonical" href="https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.0.0/START-HERE.md">
+  <style>
+    :root{color-scheme:light;--ink:#19352e;--accent:#0f6b50;--line:#d8e5df;--paper:#f5f8f6}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;line-height:1.65}
+    main{width:min(920px,calc(100% - 32px));margin:40px auto;background:#fff;border:1px solid var(--line);border-radius:18px;padding:clamp(22px,5vw,48px)}
+    h1{margin-top:0;font-size:clamp(1.6rem,4vw,2.25rem)}.meta{padding:14px 16px;background:#edf6f2;border-left:4px solid var(--accent)}
+    pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;margin-top:28px}a{color:var(--accent)}
+  </style>
+</head>
+<body><main>
+  <p><a href="/">마이팜 교육자료</a></p>
+  <h1>건조시럽 계산기 제작 지침</h1>
+  <div class="meta"><strong>고정 버전 v1.0.0</strong><br>실제 조제 전 최신 허가사항과 제품 표시를 다시 확인하십시오.<br><a href="https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.0.0/START-HERE.md">고정 원본 보기</a></div>
+  <pre id="instructions"># Claude용 건조시럽 계산기 원라인 시작점
+
+당신은 지금 이 공개 저장소를 읽고, 사용자가 바로 내려받아 쓸 수 있는 **단일 HTML 건조시럽 환산계수·칭량 질량 계산기**를 완성해야 한다. 추가 질문은 하지 말고 아래 순서대로 진행하라.
+
+1. 같은 릴리스의 [BUILD-SPEC.md](https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.0.0/BUILD-SPEC.md), [정본 데이터](https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.0.0/data/dry-syrups-v1.json), [계산 사례](https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.0.0/tests/calculation-cases-v1.json)를 모두 읽는다.
+2. 데이터의 `schemaVersion`이 `1`이고 `dataVersion`이 `1.0.0`인지 확인한다.
+3. 아래 fallback JSON의 정규화 SHA-256이 `DATA_SHA256` 값과 일치하는지 확인한다. 링크의 JSON을 읽을 수 있으면 그 파일을 우선하고, 읽지 못하면 fallback을 사용한다.
+4. `BUILD-SPEC.md`의 `MUST`와 `MUST NOT`을 모두 지킨다. UI의 색상·글꼴·레이아웃은 자유롭게 설계한다.
+5. 실행 중 네트워크 요청이 전혀 필요 없도록 10개 제품 데이터를 HTML 내부에 내장한다.
+6. 구현 후 계산 사례의 정상값을 자체 확인하고, 잘못된 입력이 화면에 오류를 내는지 확인한다.
+7. 완성한 `.html` 파일을 다운로드할 수 있게 제공한다. 구현 설명은 짧게 덧붙인다.
+
+## 링크를 일부 읽지 못해도 지켜야 할 핵심 계약
+
+- 화면 입력은 **기본 10제품 검색/선택과 처방용량(mL)**뿐이다.
+- 출력은 **환산계수(g/mL)와 칭량 질량(g)**뿐이다.
+- 체중·연령·적정용량·최대용량·환자 식별정보·목록 밖 제품 수동 입력은 만들지 않는다.
+- 외부 라이브러리나 실행 중 네트워크 요청 없이 한 HTML 파일로 작동해야 한다.
+- 사용자 입력은 `innerHTML`에 넣지 말고 안전한 DOM 속성이나 `textContent`로 표시한다.
+- 계산식은 `K = C / (1000 × P)`, `M = 처방용량 × K`이며 중간값을 반올림하지 않는다.
+
+`DATA_SHA256`: `26be7a9ab6a0f60387d26d12c630c9a803b8afda2a8ec2cd96799c96b24cb3de`
+
+## 원격 파일을 읽지 못할 때만 쓰는 fallback
+
+```json
+{"schemaVersion":1,"dataVersion":"1.0.0","verifiedAt":"2026-08-08","purpose":"건조시럽 환산계수 계산기 교육용 기본 데이터","formula":{"concentrationMgPerMl":"amountMg / volumeMl","potencyRatio":"activeG / productG","factorGPerMl":"concentrationMgPerMl / (1000 * potencyRatio)","weighMassG":"prescribedVolumeMl * factorGPerMl"},"warning":"교육·업무보조용 데이터입니다. 실제 조제 전 최신 허가사항, 제품 라벨과 약국의 검수 절차를 확인하십시오.","products":[{"id":"kyongbo-cefpodoxime-50-5","productNameKo":"경보세프포독심프록세틸건조시럽","ingredientNameKo":"세프포독심프록세틸","ingredientINN":"cefpodoxime proxetil","concentration":{"amountMg":50,"volumeMl":5,"mgPerMl":10},"potency":{"activeG":5,"productG":100,"ratio":0.05},"expectedFactorGPerMl":0.2,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 201507366)","itemSeq":"201507366","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=201507366","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"현탁액 5mL당 50mg(역가), 이 약 100g 중 세프포독심프록세틸 5,000mg(역가)"}},{"id":"ceclor-125-5","productNameKo":"시클러건조시럽125밀리그램/5밀리리터(세파클러수화물)","ingredientNameKo":"세파클러수화물","ingredientINN":"cefaclor hydrate","concentration":{"amountMg":125,"volumeMl":5,"mgPerMl":25},"potency":{"activeG":3.75,"productG":100,"ratio":0.0375},"expectedFactorGPerMl":0.666666667,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200400464)","itemSeq":"200400464","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200400464","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"현탁액 5mL당 세파클러 125mg, 이 약 100g 중 세파클러수화물 3.75g(세파클러로서 역가)"}},{"id":"hanmi-klary-125-5","productNameKo":"클래리건조시럽125mg/5ml(클래리트로마이신)","ingredientNameKo":"클래리트로마이신","ingredientINN":"clarithromycin","concentration":{"amountMg":125,"volumeMl":5,"mgPerMl":25},"potency":{"activeG":3.547,"productG":100,"ratio":0.03547},"expectedFactorGPerMl":0.704820975,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200308397)","itemSeq":"200308397","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200308397","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"제품명 기준 현탁액 5mL당 125mg, 이 약 100g 중 클래리트로마이신 3,547mg"}},{"id":"claris-250-5","productNameKo":"크래리스건조시럽250밀리그램/5밀리리터(클래리트로마이신)","ingredientNameKo":"클래리트로마이신","ingredientINN":"clarithromycin","concentration":{"amountMg":250,"volumeMl":5,"mgPerMl":50},"potency":{"activeG":6.449,"productG":100,"ratio":0.06449},"expectedFactorGPerMl":0.775314002,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200604204)","itemSeq":"200604204","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200604204","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"제품명 기준 현탁액 5mL당 250mg, 이 약 100g 중 클래리트로마이신으로서 6,449mg(역가)"}},{"id":"azimax-600-15","productNameKo":"아지맥스건조시럽(아지트로마이신수화물)","ingredientNameKo":"아지트로마이신수화물","ingredientINN":"azithromycin hydrate","concentration":{"amountMg":600,"volumeMl":15,"mgPerMl":40},"potency":{"activeG":4.779,"productG":100,"ratio":0.04779},"expectedFactorGPerMl":0.836995187,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200801059)","itemSeq":"200801059","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200801059","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"조제 후 15mL당 600mg(역가), 이 약 100g 중 아지트로마이신 역가로서 4.779g"}},{"id":"cefosime-50-5","productNameKo":"세포심건조시럽50mg/5mL(세프포독심프록세틸)","ingredientNameKo":"세프포독심프록세틸","ingredientINN":"cefpodoxime proxetil","concentration":{"amountMg":50,"volumeMl":5,"mgPerMl":10},"potency":{"activeG":5,"productG":100,"ratio":0.05},"expectedFactorGPerMl":0.2,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 201406031)","itemSeq":"201406031","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=201406031","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"제품명 기준 현탁액 5mL당 50mg, 이 약 100g 중 세프포독심프록세틸 5,000mg(역가)"}},{"id":"seropazil-125-5","productNameKo":"세로파질건조시럽(세프프로질수화물125mg(역가)/5mL)","ingredientNameKo":"세프프로질수화물","ingredientINN":"cefprozil hydrate","concentration":{"amountMg":125,"volumeMl":5,"mgPerMl":25},"potency":{"activeG":5,"productG":100,"ratio":0.05},"expectedFactorGPerMl":0.5,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200400918)","itemSeq":"200400918","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200400918","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"현탁액 5mL당 세프프로질 125mg(역가), 이 약 100g 중 세프프로질수화물 5.0g(역가)"}},{"id":"hanmiflu-6-1","productNameKo":"한미플루현탁용분말6mg/mL(오셀타미비르)","ingredientNameKo":"오셀타미비르","ingredientINN":"oseltamivir","concentration":{"amountMg":6,"volumeMl":1,"mgPerMl":6},"potency":{"activeG":4.74,"productG":100,"ratio":0.0474},"expectedFactorGPerMl":0.126582278,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 201600829)","itemSeq":"201600829","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=201600829","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"제품명 기준 현탁액 1mL당 6mg, 이 약 약 100g 중 오셀타미비르 4.74g"}},{"id":"diflucan-350-35","productNameKo":"디푸루칸건조시럽(플루코나졸)","ingredientNameKo":"플루코나졸","ingredientINN":"fluconazole","concentration":{"amountMg":350,"volumeMl":35,"mgPerMl":10},"potency":{"activeG":1.64,"productG":100,"ratio":0.0164},"expectedFactorGPerMl":0.609756098,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200511062)","itemSeq":"200511062","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200511062","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"현탁액 농도 10mg/mL(35mL), 이 약 100g 중 플루코나졸 1.64g"}},{"id":"polybutine-4.8-1","productNameKo":"포리부틴드라이시럽(트리메부틴)","ingredientNameKo":"트리메부틴","ingredientINN":"trimebutine","concentration":{"amountMg":4.8,"volumeMl":1,"mgPerMl":4.8},"potency":{"activeG":0.787,"productG":100,"ratio":0.00787},"expectedFactorGPerMl":0.609911055,"status":"official-source-verified","source":{"title":"식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 198000169)","itemSeq":"198000169","url":"https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=198000169","verifiedAt":"2026-08-08","status":"official-source-verified","evidence":"용법 기준 현탁액 15mL당 트리메부틴 72mg, 이 약 100g 중 트리메부틴 787mg"}}]}
+```
+</pre>
+</main></body></html>
