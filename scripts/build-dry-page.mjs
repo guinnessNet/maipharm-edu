@@ -1,17 +1,17 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
-const source = readFileSync(new URL('../sources/dry-v1.1.0.md', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../sources/dry-v1.2.0.md', import.meta.url), 'utf8');
 const escapeHtml = (value) => value
   .replaceAll('&', '&amp;')
   .replaceAll('<', '&lt;')
   .replaceAll('>', '&gt;');
-const canonical = 'https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.1.0/START-HERE.md';
+const canonical = 'https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.2.0/START-HERE.md';
 const html = `<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>건조시럽 계산기 제작 지침 v1.1.0 | 마이팜 교육자료</title>
+  <title>건조시럽 계산기 제작 지침 v1.2.0 | 마이팜 교육자료</title>
   <link rel="canonical" href="${canonical}">
   <style>
     :root{color-scheme:light;--ink:#19352e;--accent:#0f6b50;--line:#d8e5df;--paper:#f5f8f6}
@@ -24,7 +24,7 @@ const html = `<!doctype html>
 <body><main>
   <p><a href="/">마이팜 교육자료</a></p>
   <h1>건조시럽 계산기 제작 지침</h1>
-  <div class="meta"><strong>고정 버전 v1.1.0 · 기본 11제품</strong><br>실제 조제 전 최신 허가사항과 제품 표시를 다시 확인하십시오.<br><a href="${canonical}">고정 원본 보기</a></div>
+  <div class="meta"><strong>고정 버전 v1.2.0 · 기본 11제품 · mg→mL→g 연쇄 계산</strong><br>실제 조제 전 최신 허가사항과 제품 표시를 다시 확인하십시오.<br><a href="${canonical}">고정 원본 보기</a></div>
   <pre id="instructions">${escapeHtml(source)}</pre>
 </main></body></html>`;
 

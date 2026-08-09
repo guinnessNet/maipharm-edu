@@ -6,10 +6,14 @@ const escapeHtml = (value) => value
   .replaceAll('&', '&amp;')
   .replaceAll('<', '&lt;')
   .replaceAll('>', '&gt;');
-const canonical = 'https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.1.0/START-HERE.md';
+const canonical = 'https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.2.0/START-HERE.md';
 const required = [
-  'v1.1.0',
+  'v1.2.0',
   '11개 제품',
+  '총 성분량(mg)',
+  '완전 현탁액 부피',
+  '정제수 적량',
+  '750mg → 30mL → 23.25g',
   '파목신시럽(아목시실린수화물)',
   'BUILD-SPEC.md',
   'data/dry-syrups-v1.json',
@@ -20,10 +24,10 @@ const required = [
 assert.equal(read('CNAME').trim(), 'edu.maipharm.com');
 
 assert.ok(
-  existsSync(new URL('../sources/dry-v1.1.0.md', import.meta.url)),
-  'missing sources/dry-v1.1.0.md',
+  existsSync(new URL('../sources/dry-v1.2.0.md', import.meta.url)),
+  'missing sources/dry-v1.2.0.md',
 );
-const source = read('sources/dry-v1.1.0.md');
+const source = read('sources/dry-v1.2.0.md');
 
 const dry = read('dry/index.html');
 assert.ok(dry.includes(escapeHtml(source)), 'generated page does not embed the complete source');
