@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>건조시럽 환산계수·칭량 질량 계산기</title>
+<style>
+  :root{
+    --bg:#f4f6f8;
+    --card:#ffffff;
+    --border:#dbe1e8;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --primary:#0f6e5c;
+    --primary-dark:#0b5548;
+    --accent-bg:#eaf4f1;
+    --warn-bg:#fff7e6;
+    --warn-border:#f0c36d;
+    --error:#c0392b;
+    --focus:#0f6e5c;
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.55;
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:880px;margin:0 auto;}
+  header.top{margin-bottom:20px;}
+  header.top h1{font-size:1.45rem;margin:0 0 6px;color:var(--primary-dark);}
+  header.top p{margin:0;color:var(--muted);font-size:0.92rem;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:18px;
+  }
+  .card h2{
+    font-size:1.05rem;
+    margin:0 0 12px;
+    color:var(--primary-dark);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .step-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;height:22px;
+    border-radius:50%;
+    background:var(--primary);
+    color:#fff;
+    font-size:0.78rem;
+    flex:none;
+  }
+  label{font-weight:600;font-size:0.9rem;display:block;margin-bottom:6px;}
+  input[type="text"], input[type="number"]{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:1rem;
+    background:#fff;
+    color:var(--text);
+  }
+  input:focus, button:focus, [role="radio"]:focus, .product-item:focus-within{
+    outline:3px solid var(--focus);
+    outline-offset:1px;
+  }
+  .search-row{margin-bottom:12px;}
+  .product-list{
+    max-height:280px;
+    overflow-y:auto;
+    border:1px solid var(--border);
+    border-radius:8px;
+  }
+  .product-item{
+    border-bottom:1px solid var(--border);
+  }
+  .product-item:last-child{border-bottom:none;}
+  .product-item label{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:10px 12px;
+    margin:0;
+    cursor:pointer;
+    font-weight:400;
+  }
+  .product-item input[type="radio"]{margin-top:3px;flex:none;}
+  .product-item .pname{font-weight:700;font-size:0.94rem;display:block;}
+  .product-item .pmeta{font-size:0.82rem;color:var(--muted);display:block;margin-top:2px;}
+  .product-item.selected{background:var(--accent-bg);}
+  .product-item.hidden{display:none;}
+  .mode-group{
+    display:flex;
+    gap:12px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .mode-option{
+    flex:1;
+    min-width:200px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+  }
+  .mode-option.selected{border-color:var(--primary);background:var(--accent-bg);}
+  .mode-option input{flex:none;}
+  .mode-option .mtext{font-weight:600;font-size:0.92rem;}
+  .input-area{display:none;}
+  .input-area.active{display:block;}
+  .field{margin-bottom:14px;}
+  .unit-suffix{font-size:0.85rem;color:var(--muted);margin-top:4px;}
+  button#calcBtn{
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:8px;
+    font-size:1rem;
+    font-weight:700;
+    cursor:pointer;
+  }
+  button#calcBtn:hover{background:var(--primary-dark);}
+  button#calcBtn:disabled{background:#a9b3bb;cursor:not-allowed;}
+  .error-msg{
+    color:var(--error);
+    font-size:0.88rem;
+    margin-top:8px;
+    font-weight:600;
+    min-height:1.2em;
+  }
+  .results{margin-top:6px;}
+  .result-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  @media (max-width:640px){
+    .result-grid{grid-template-columns:1fr;}
+  }
+  .result-box{
+    background:var(--accent-bg);
+    border:1px solid #cfe6df;
+    border-radius:10px;
+    padding:14px;
+  }
+  .result-box .rlabel{font-size:0.82rem;color:var(--muted);margin-bottom:4px;}
+  .result-box .rvalue{font-size:1.25rem;font-weight:800;color:var(--primary-dark);}
+  .note-box{
+    background:var(--warn-bg);
+    border:1px solid var(--warn-border);
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:0.88rem;
+    margin-bottom:10px;
+  }
+  .note-box strong{display:block;margin-bottom:4px;}
+  .source-box{
+    font-size:0.85rem;
+    color:var(--muted);
+    border-top:1px dashed var(--border);
+    padding-top:10px;
+    margin-top:10px;
+  }
+  .source-box a{color:var(--primary-dark);}
+  .empty-state{color:var(--muted);font-size:0.9rem;}
+  footer.disclaimer{
+    font-size:0.8rem;
+    color:var(--muted);
+    text-align:center;
+    margin-top:26px;
+  }
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>건조시럽 환산계수·칭량 질량 계산기</h1>
+    <p>건조시럽 제품의 처방용량(mL) 또는 총 성분량(mg)을 입력하여 완전 현탁액 부피, 환산계수(g/mL), 칭량 질량(g)을 계산하는 조제 보조 도구입니다. 진단·용량 추천 도구가 아닙니다.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="step-badge">1</span>제품 선택</h2>
+    <div class="search-row">
+      <label for="productSearch">제품 검색 (제품명 또는 성분명)</label>
+      <input type="text" id="productSearch" placeholder="예: 클래리, 세프포독심 ...">
+    </div>
+    <div class="product-list" id="productList" role="radiogroup" aria-label="건조시럽 제품 목록"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step-badge">2</span>입력 기준 선택</h2>
+    <div class="mode-group" id="modeGroup" role="radiogroup" aria-label="입력 기준">
+      <label class="mode-option" id="modeVolLabel">
+        <input type="radio" name="inputMode" id="modeVol" value="volume" checked>
+        <span class="mtext">처방용량(mL) 직접 입력</span>
+      </label>
+      <label class="mode-option" id="modeAmtLabel">
+        <input type="radio" name="inputMode" id="modeAmt" value="amount">
+        <span class="mtext">총 성분량(mg) 입력</span>
+      </label>
+    </div>
+
+    <div class="input-area active" id="areaVol">
+      <div class="field">
+        <label for="volInput">처방용량 V (mL)</label>
+        <input type="number" id="volInput" step="any" inputmode="decimal" aria-describedby="volHelp">
+        <div class="unit-suffix" id="volHelp">이 값을 완전 현탁액 부피(V)로 사용합니다.</div>
+      </div>
+    </div>
+
+    <div class="input-area" id="areaAmt">
+      <div class="field">
+        <label for="amtInput">총 성분량 D (mg)</label>
+        <input type="number" id="amtInput" step="any" inputmode="decimal" aria-describedby="amtHelp">
+        <div class="unit-suffix" id="amtHelp">V = D / C (조제 후 농도) 로 완전 현탁액 부피를 먼저 계산합니다.</div>
+      </div>
+    </div>
+
+    <button type="button" id="calcBtn" disabled>계산하기</button>
+    <div class="error-msg" id="errorMsg" role="alert"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step-badge">3</span>계산 결과</h2>
+    <div class="results" id="resultsArea">
+      <p class="empty-state" id="emptyState">제품을 선택하고 값을 입력한 뒤 계산하기를 누르면 결과가 표시됩니다.</p>
+    </div>
+  </section>
+
+  <footer class="disclaimer">건조시럽 환산계수 계산기 · 고정 데이터 버전 v1.2.0 · 교육·업무보조용 · 오프라인 작동 · 외부 라이브러리 미사용</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- 내장 데이터 (data/dry-syrups-v1.json, dataVersion 1.2.0, schemaVersion 1) ----
+  var DATA_VERSION = "1.2.0";
+  var VERIFIED_AT = "2026-08-09";
+  var WARNING_TEXT = "교육·업무보조용 데이터입니다. 실제 조제 전 최신 허가사항, 제품 라벨과 약국의 검수 절차를 확인하십시오.";
+
+  var PRODUCTS = [
+    {
+      id: "kyongbo-cefpodoxime-50-5",
+      productNameKo: "경보세프포독심프록세틸건조시럽",
+      ingredientNameKo: "세프포독심프록세틸",
+      concentration: { amountMg: 50, volumeMl: 5 },
+      potency: { activeG: 5, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 201507366)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=201507366", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "ceclor-125-5",
+      productNameKo: "시클러건조시럽125밀리그램/5밀리리터(세파클러수화물)",
+      ingredientNameKo: "세파클러수화물",
+      concentration: { amountMg: 125, volumeMl: 5 },
+      potency: { activeG: 3.75, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200400464)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200400464", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "hanmi-klary-125-5",
+      productNameKo: "클래리건조시럽125mg/5ml(클래리트로마이신)",
+      ingredientNameKo: "클래리트로마이신",
+      concentration: { amountMg: 125, volumeMl: 5 },
+      potency: { activeG: 3.547, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200308397)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200308397", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "claris-250-5",
+      productNameKo: "크래리스건조시럽250밀리그램/5밀리리터(클래리트로마이신)",
+      ingredientNameKo: "클래리트로마이신",
+      concentration: { amountMg: 250, volumeMl: 5 },
+      potency: { activeG: 6.449, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200604204)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200604204", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "azimax-600-15",
+      productNameKo: "아지맥스건조시럽(아지트로마이신수화물)",
+      ingredientNameKo: "아지트로마이신수화물",
+      concentration: { amountMg: 600, volumeMl: 15 },
+      potency: { activeG: 4.779, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200801059)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200801059", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "cefosime-50-5",
+      productNameKo: "세포심건조시럽50mg/5mL(세프포독심프록세틸)",
+      ingredientNameKo: "세프포독심프록세틸",
+      concentration: { amountMg: 50, volumeMl: 5 },
+      potency: { activeG: 5, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 201406031)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=201406031", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "seropazil-125-5",
+      productNameKo: "세로파질건조시럽(세프프로질수화물125mg(역가)/5mL)",
+      ingredientNameKo: "세프프로질수화물",
+      concentration: { amountMg: 125, volumeMl: 5 },
+      potency: { activeG: 5, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200400918)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200400918", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "hanmiflu-6-1",
+      productNameKo: "한미플루현탁용분말6mg/mL(오셀타미비르)",
+      ingredientNameKo: "오셀타미비르",
+      concentration: { amountMg: 6, volumeMl: 1 },
+      potency: { activeG: 4.74, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 201600829)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=201600829", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "diflucan-350-35",
+      productNameKo: "디푸루칸건조시럽(플루코나졸)",
+      ingredientNameKo: "플루코나졸",
+      concentration: { amountMg: 350, volumeMl: 35 },
+      potency: { activeG: 1.64, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 200511062)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200511062", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "polybutine-4.8-1",
+      productNameKo: "포리부틴드라이시럽(트리메부틴)",
+      ingredientNameKo: "트리메부틴",
+      concentration: { amountMg: 4.8, volumeMl: 1 },
+      potency: { activeG: 0.787, productG: 100 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 198000169)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=198000169", verifiedAt: "2026-08-08" }
+    },
+    {
+      id: "pamoxin-amoxicillin-25-1",
+      productNameKo: "파목신시럽(아목시실린수화물)",
+      ingredientNameKo: "아목시실린수화물",
+      concentration: { amountMg: 25, volumeMl: 1 },
+      potency: { activeG: 3.23, productG: 100 },
+      factorMethod: "direct-preparation-ratio",
+      directPreparationRatio: { powderMassG: 387.5, finalVolumeMl: 500 },
+      source: { title: "식품의약품안전처 의약품제품정보 상세보기 (품목기준코드 197700130)", url: "https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=197700130", verifiedAt: "2026-08-09" }
+    }
+  ];
+
+  // ---- 상태 ----
+  var state = {
+    selectedProductId: null,
+    inputMode: "volume" // "volume" | "amount"
+  };
+
+  // ---- DOM 참조 ----
+  var productListEl = document.getElementById("productList");
+  var productSearchEl = document.getElementById("productSearch");
+  var modeVol = document.getElementById("modeVol");
+  var modeAmt = document.getElementById("modeAmt");
+  var modeVolLabel = document.getElementById("modeVolLabel");
+  var modeAmtLabel = document.getElementById("modeAmtLabel");
+  var areaVol = document.getElementById("areaVol");
+  var areaAmt = document.getElementById("areaAmt");
+  var volInput = document.getElementById("volInput");
+  var amtInput = document.getElementById("amtInput");
+  var calcBtn = document.getElementById("calcBtn");
+  var errorMsg = document.getElementById("errorMsg");
+  var resultsArea = document.getElementById("resultsArea");
+
+  // ---- 제품 목록 렌더 ----
+  function renderProductList(filterText){
+    productListEl.textContent = "";
+    var q = (filterText || "").trim().toLowerCase();
+    PRODUCTS.forEach(function(p){
+      var item = document.createElement("div");
+      item.className = "product-item";
+      item.dataset.pid = p.id;
+
+      var matches = !q ||
+        p.productNameKo.toLowerCase().indexOf(q) !== -1 ||
+        p.ingredientNameKo.toLowerCase().indexOf(q) !== -1;
+      if(!matches){ item.classList.add("hidden"); }
+
+      var label = document.createElement("label");
+
+      var radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "productChoice";
+      radio.value = p.id;
+      radio.id = "prod-" + p.id;
+      if(state.selectedProductId === p.id){ radio.checked = true; item.classList.add("selected"); }
+      radio.addEventListener("change", function(){
+        selectProduct(p.id);
+      });
+
+      var span = document.createElement("span");
+
+      var nameEl = document.createElement("span");
+      nameEl.className = "pname";
+      nameEl.textContent = p.productNameKo;
+
+      var metaEl = document.createElement("span");
+      metaEl.className = "pmeta";
+      var cPerMl = p.concentration.amountMg / p.concentration.volumeMl;
+      metaEl.textContent = p.ingredientNameKo + " · 현탁액 " + trimNum(cPerMl) + " mg/mL 상당";
+
+      span.appendChild(nameEl);
+      span.appendChild(metaEl);
+
+      label.appendChild(radio);
+      label.appendChild(span);
+      item.appendChild(label);
+      productListEl.appendChild(item);
+    });
+  }
+
+  function trimNum(n){
+    // 화면용 간단 표시 (계산에는 사용하지 않음)
+    var r = Math.round(n * 1000) / 1000;
+    return String(r);
+  }
+
+  function selectProduct(pid){
+    state.selectedProductId = pid;
+    Array.prototype.forEach.call(productListEl.querySelectorAll(".product-item"), function(el){
+      el.classList.toggle("selected", el.dataset.pid === pid);
+    });
+    invalidateResults();
+    updateCalcButtonState();
+  }
+
+  productSearchEl.addEventListener("input", function(){
+    renderProductList(productSearchEl.value);
+  });
+
+  // ---- 입력 기준 전환 ----
+  function setMode(mode){
+    state.inputMode = mode;
+    modeVolLabel.classList.toggle("selected", mode === "volume");
+    modeAmtLabel.classList.toggle("selected", mode === "amount");
+    areaVol.classList.toggle("active", mode === "volume");
+    areaAmt.classList.toggle("active", mode === "amount");
+    // 입력 기준을 바꾸면 이전 입력값과 결과를 지운다.
+    volInput.value = "";
+    amtInput.value = "";
+    invalidateResults();
+    updateCalcButtonState();
+  }
+
+  modeVol.addEventListener("change", function(){ if(modeVol.checked) setMode("volume"); });
+  modeAmt.addEventListener("change", function(){ if(modeAmt.checked) setMode("amount"); });
+
+  volInput.addEventListener("input", function(){ invalidateResults(); updateCalcButtonState(); });
+  amtInput.addEventListener("input", function(){ invalidateResults(); updateCalcButtonState(); });
+
+  function updateCalcButtonState(){
+    var hasProduct = !!state.selectedProductId;
+    var currentInput = state.inputMode === "volume" ? volInput.value : amtInput.value;
+    calcBtn.disabled = !(hasProduct && currentInput !== "");
+  }
+
+  function invalidateResults(){
+    errorMsg.textContent = "";
+    resultsArea.textContent = "";
+    var p = document.createElement("p");
+    p.className = "empty-state";
+    p.textContent = "제품을 선택하고 값을 입력한 뒤 계산하기를 누르면 결과가 표시됩니다.";
+    resultsArea.appendChild(p);
+  }
+
+  // ---- 계산 ----
+  function getSelectedProduct(){
+    return PRODUCTS.filter(function(p){ return p.id === state.selectedProductId; })[0] || null;
+  }
+
+  function isFiniteNumber(n){
+    return typeof n === "number" && isFinite(n) && !isNaN(n);
+  }
+
+  calcBtn.addEventListener("click", function(){
+    errorMsg.textContent = "";
+    var product = getSelectedProduct();
+    if(!product){ return; }
+
+    var C = product.concentration.amountMg / product.concentration.volumeMl; // mg/mL, 원래 숫자로 재계산
+    var P = product.potency.activeG / product.potency.productG; // g/g
+
+    // 역가비 범위 검사
+    if(!(P > 0 && P <= 1)){
+      showError("역가는 0보다 크고 1 이하여야 합니다.");
+      return;
+    }
+    // 농도 검사
+    if(!isFiniteNumber(C) || !(C > 0)){
+      showError("0보다 큰 값을 입력해 주세요.");
+      return;
+    }
+
+    var K; // g/mL
+    if(product.factorMethod === "direct-preparation-ratio"){
+      var d = product.directPreparationRatio;
+      K = d.powderMassG / d.finalVolumeMl;
+    } else {
+      K = C / (1000 * P);
+    }
+
+    var V; // mL, 완전 현탁액 부피
+
+    if(state.inputMode === "volume"){
+      var vRaw = volInput.value;
+      var vNum = parseFloat(vRaw);
+      if(vRaw === "" || !isFiniteNumber(vNum)){
+        showError("숫자를 확인해 주세요.");
+        return;
+      }
+      if(!(vNum > 0)){
+        showError("0보다 큰 값을 입력해 주세요.");
+        return;
+      }
+      V = vNum;
+    } else {
+      var dRaw = amtInput.value;
+      var dNum = parseFloat(dRaw);
+      if(dRaw === "" || !isFiniteNumber(dNum)){
+        showError("숫자를 확인해 주세요.");
+        return;
+      }
+      if(!(dNum > 0)){
+        showError("0보다 큰 값을 입력해 주세요.");
+        return;
+      }
+      V = dNum / C; // 반올림 없이 원래 숫자로 계산
+    }
+
+    if(!isFiniteNumber(V) || !(V > 0)){
+      showError("숫자를 확인해 주세요.");
+      return;
+    }
+
+    var M = V * K; // 중간값 반올림 없이 계산
+
+    renderResults(product, V, K, M);
+  });
+
+  function showError(msg){
+    errorMsg.textContent = msg;
+    resultsArea.textContent = "";
+    var p = document.createElement("p");
+    p.className = "empty-state";
+    p.textContent = "입력값을 확인한 뒤 다시 계산해 주세요.";
+    resultsArea.appendChild(p);
+  }
+
+  function formatResultNumber(n){
+    // 최소 소수점 넷째 자리까지 표시, 불필요한 후행 0 제거
+    var fixed = n.toFixed(4);
+    fixed = fixed.replace(/0+$/,"").replace(/\.$/,"");
+    if(fixed.indexOf(".") === -1){ fixed = fixed + ".0000"; }
+    return fixed;
+  }
+
+  function renderResults(product, V, K, M){
+    resultsArea.textContent = "";
+
+    // 결과 카드 3개
+    var grid = document.createElement("div");
+    grid.className = "result-grid";
+
+    grid.appendChild(makeResultBox("완전 현탁액 부피 (V)", formatResultNumber(V) + " mL"));
+    grid.appendChild(makeResultBox("환산계수 (K, g/mL)", formatResultNumber(K)));
+    grid.appendChild(makeResultBox("칭량 질량 (M, g)", formatResultNumber(M) + " g"));
+
+    resultsArea.appendChild(grid);
+
+    // 조제용수 안내
+    var waterNote = document.createElement("div");
+    waterNote.className = "note-box";
+    var waterStrong = document.createElement("strong");
+    waterStrong.textContent = "조제용수 안내";
+    var waterP = document.createElement("div");
+    waterP.textContent = "정제수 적량을 사용해 충분히 현탁한 뒤 표시된 최종 부피(" + formatResultNumber(V) + " mL)로 맞추십시오. 표시된 최종 부피는 넣을 물의 양이 아닙니다.";
+    waterNote.appendChild(waterStrong);
+    waterNote.appendChild(waterP);
+    resultsArea.appendChild(waterNote);
+
+    // 보조값 경고
+    var warnNote = document.createElement("div");
+    warnNote.className = "note-box";
+    var warnStrong = document.createElement("strong");
+    warnStrong.textContent = "안내";
+    var warnP = document.createElement("div");
+    warnP.textContent = "이 결과는 칭량 계산 보조값입니다. 실제 조제 전 최신 제품 허가사항과 약국의 독립 검수 절차를 확인하십시오.";
+    warnNote.appendChild(warnStrong);
+    warnNote.appendChild(warnP);
+    resultsArea.appendChild(warnNote);
+
+    // 출처 정보
+    var srcBox = document.createElement("div");
+    srcBox.className = "source-box";
+
+    var line1 = document.createElement("div");
+    line1.textContent = "선택 제품: " + product.productNameKo + " (" + product.ingredientNameKo + ")";
+
+    var line2 = document.createElement("div");
+    var link = document.createElement("a");
+    link.href = product.source.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = product.source.title;
+    line2.appendChild(document.createTextNode("공식 출처: "));
+    line2.appendChild(link);
+
+    var line3 = document.createElement("div");
+    line3.textContent = "제품 데이터 검증일: " + product.source.verifiedAt + " · 계산기 데이터 버전: v" + DATA_VERSION + " (전체 검증일 " + VERIFIED_AT + ")";
+
+    var line4 = document.createElement("div");
+    line4.textContent = WARNING_TEXT;
+
+    srcBox.appendChild(line1);
+    srcBox.appendChild(line2);
+    srcBox.appendChild(line3);
+    srcBox.appendChild(line4);
+
+    resultsArea.appendChild(srcBox);
+  }
+
+  function makeResultBox(labelText, valueText){
+    var box = document.createElement("div");
+    box.className = "result-box";
+    var lab = document.createElement("div");
+    lab.className = "rlabel";
+    lab.textContent = labelText;
+    var val = document.createElement("div");
+    val.className = "rvalue";
+    val.textContent = valueText;
+    box.appendChild(lab);
+    box.appendChild(val);
+    return box;
+  }
+
+  // ---- 초기화 ----
+  renderProductList("");
+  invalidateResults();
+  updateCalcButtonState();
+
+  // ---- 자체 검산 (개발자 콘솔용, 화면에 표시하지 않음) ----
+  (function selfCheck(){
+    try{
+      var cases = [
+        // 파목신 검산 사례: 750mg -> 30mL -> 23.25g (direct-preparation-ratio, K=0.775)
+        { pid: "pamoxin-amoxicillin-25-1", mode: "amount", input: 750, expectV: 30, expectM: 23.25 },
+        // 경보세프포독심: 총 성분량 100mg, C=10mg/mL -> V=10mL, K=0.2 -> M=2g
+        { pid: "kyongbo-cefpodoxime-50-5", mode: "amount", input: 100, expectV: 10, expectM: 2 },
+        // 클래리건조시럽: mL 직접입력 5mL -> K=0.704820975 -> M=3.5241048...
+        { pid: "hanmi-klary-125-5", mode: "volume", input: 5, expectV: 5, expectM: 5 * (25/1000/0.03547) }
+      ];
+      var tol = 1e-6;
+      cases.forEach(function(c){
+        var product = PRODUCTS.filter(function(p){return p.id === c.pid;})[0];
+        var C = product.concentration.amountMg / product.concentration.volumeMl;
+        var P = product.potency.activeG / product.potency.productG;
+        var K = product.factorMethod === "direct-preparation-ratio"
+          ? product.directPreparationRatio.powderMassG / product.directPreparationRatio.finalVolumeMl
+          : C / (1000 * P);
+        var V = c.mode === "volume" ? c.input : c.input / C;
+        var M = V * K;
+        var okV = Math.abs(V - c.expectV) < 1e-4;
+        var okM = Math.abs(M - c.expectM) < 1e-4;
+        if(!okV || !okM){
+          console.warn("[자체검산 불일치]", c.pid, {V:V, M:M, expectV:c.expectV, expectM:c.expectM});
+        }
+      });
+    }catch(e){
+      console.warn("자체 검산 중 오류", e);
+    }
+  })();
+
+})();
+</script>
+</body>
+</html>
