@@ -6,9 +6,12 @@
 
 - 허브: `https://edu.maipharm.com/`
 - 건조시럽 계산기 지침: `https://edu.maipharm.com/dry`
-- 고정 원본: `https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.1.0/START-HERE.md`
+- 교육자료 샘플: `https://edu.maipharm.com/sample/`
+- 고정 원본: `https://raw.githubusercontent.com/guinnessNet/dry-syrup-calculator/v1.2.0/START-HERE.md`
 
-`sources/dry-v1.1.0.md`는 11제품 고정 원본의 복제본이다. 검증기는 원문 전체를 HTML로 이스케이프한 결과와 배포 파일을 직접 비교한다.
+`sources/dry-v1.2.0.md`는 11제품 고정 원본의 복제본이다. 검증기는 원문 전체를 HTML로 이스케이프한 결과와 배포 파일을 직접 비교한다.
+
+교육 결과물은 제작 지침과 분리해 `/sample/<주제>/<단계>/`에 올린다. 원본 선정부터 배포 후 해시 확인까지의 절차는 [교육자료 샘플 게시 운영 가이드](docs/SAMPLE-PUBLISHING.md)를 따른다.
 
 ## 빌드와 검증
 
